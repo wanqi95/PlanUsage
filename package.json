@@ -1,0 +1,60 @@
+{
+  "name": "plan-usage",
+  "version": "0.6.2",
+  "description": "大模型订阅用量/余额桌面悬浮监控 - 透明毛玻璃悬浮窗，多厂商多账号，用量圆盘+余额卡片",
+  "main": "main.js",
+  "author": "plan-usage",
+  "license": "MIT",
+  "scripts": {
+    "start": "set ELECTRON_RUN_AS_NODE=&& electron .",
+    "dev": "set ELECTRON_RUN_AS_NODE=&& electron . --dev",
+    "test": "node test/run-tests.js",
+    "build": "electron-builder --win",
+    "build:portable": "electron-builder --win portable"
+  },
+  "devDependencies": {
+    "electron": "^28.3.3",
+    "electron-builder": "^24.13.3"
+  },
+  "build": {
+    "appId": "com.plan-usage.app",
+    "productName": "Plan Usage",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "src/**/*",
+      "skill/**/*",
+      "assets/**/*",
+      "build/icon.ico"
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "portable",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "build/icon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "shortcutName": "Plan Usage"
+    },
+    "portable": {
+      "artifactName": "plan-usage-v${version}.exe"
+    }
+  }
+}
