@@ -9,6 +9,7 @@ contextBridge.exposeInMainWorld('api', {
   hideWindow: () => ipcRenderer.invoke('hide-window'),
   minimizeWindow: () => ipcRenderer.invoke('minimize-window'),
   getWindowState: () => ipcRenderer.invoke('get-window-state'),
+  setLayoutSize: (payload) => ipcRenderer.invoke('window:set-layout-size', payload),
 
   // config
   getConfig: () => ipcRenderer.invoke('config:get'),

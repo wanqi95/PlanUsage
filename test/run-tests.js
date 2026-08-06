@@ -46,6 +46,7 @@ async function main() {
     assert.strictEqual(cfg.opacity, 0.92);
     assert.strictEqual(cfg.width, 420);
     assert.strictEqual(cfg.height, 580);
+    assert.strictEqual(cfg.layoutMode, 'vertical');
     assert.strictEqual(cfg.locale, 'zh');
     assert.strictEqual(cfg.appearance.borderWidth, 8);
     assert.strictEqual(cfg.alert.threshold2, 85);

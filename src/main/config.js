@@ -11,6 +11,7 @@ const DEFAULT_CONFIG = {
   y: null,
   width: 420,
   height: 580,
+  layoutMode: 'vertical',
   locale: 'zh',
   appearance: {
     borderWidth: 8,

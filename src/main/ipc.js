@@ -1,4 +1,4 @@
-const { ipcMain, dialog } = require('electron');
+const { ipcMain, dialog, screen } = require('electron');
 const config = require('./config');
 const monitor = require('./monitor');
 const adapters = require('./adapters');
@@ -45,6 +45,21 @@ function setupIPC() {
       isMinimized: win.isMinimized(),
       isMaximized: win.isMaximized(),
     };
+  });
+
+  // 横排/竖排切换：按内容尺寸调整窗口，并同步 layoutMode（横向尺寸不覆盖 width/height 记忆）
+  ipcMain.handle('window:set-layout-size', (_event, { width, height, minWidth, minHeight, mode } = {}) => {
+    const win = getMainWindow();
+    if (!win) return null;
+    const mw = Math.max(1, Math.round(Number(minWidth) || 260));
+    const mh = Math.max(1, Math.round(Number(minHeight) || 300));
+    const area = screen.getDisplayMatching(win.getBounds()).workArea;
+    const w = Math.min(Math.max(mw, Math.round(Number(width) || mw)), Math.max(mw, area.width - 20));
+    const h = Math.min(Math.max(mh, Math.round(Number(height) || mh)), Math.max(mh, area.height - 20));
+    if (mode === 'horizontal' || mode === 'vertical') config.patchConfig({ layoutMode: mode });
+    win.setMinimumSize(mw, mh);
+    win.setSize(w, h);
+    return { width: w, height: h, minWidth: mw, minHeight: mh };
   });
 
   // ---- config ----

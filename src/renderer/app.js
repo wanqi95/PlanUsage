@@ -1,7 +1,7 @@
 // 渲染层编排：标题栏、卡片列表、设置面板、i18n 重渲染、数据流。
 // 数据流：init-state（config 快照）→ monitors:list → 每项 monitor:get 拿缓存渲染
 // （无缓存的触发一次 monitor:refresh）→ onMonitorData 更新对应卡片。
-import { $, el, deepMerge } from './dom.js';
+import { $, $$, el, deepMerge } from './dom.js';
 import { t, setLocale, getLocale, onLocaleChange } from './i18n.js';
 import { state, setEntry, getMonitor } from './state.js';
 import { createUsageCard, updateUsageCard } from './monitor-card.js';
@@ -33,6 +33,64 @@ function setPinState(on) {
   const btn = $('#btn-pin');
   btn.textContent = on ? '▲' : '△';
   btn.classList.toggle('active', on);
+}
+
+// ---- 横排 / 竖排切换 ----
+
+let fitRaf = 0;
+
+function scheduleFit() {
+  if (!api || !$('#app').classList.contains('layout-horizontal')) return;
+  cancelAnimationFrame(fitRaf);
+  fitRaf = requestAnimationFrame(() => {
+    fitRaf = requestAnimationFrame(fitHorizontalWindow);
+  });
+}
+
+// 横向模式：窗口宽度 = 左侧标题列 + 全部卡片一行排开的宽度；高度 = 最高卡片 + 边距
+function fitHorizontalWindow() {
+  if (!api || !$('#app').classList.contains('layout-horizontal')) return;
+  const border =
+    (parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--app-border-width')) || 8) * 2;
+  const titleBar = $('#title-bar').getBoundingClientRect();
+  const cards = $('#cards');
+  const cardEls = $$('.card');
+  const cardsH = cardEls.length ? Math.max(...cardEls.map((c) => c.offsetHeight)) : 120;
+  const contentH = Math.max(cardsH + 12, 110);
+  const width = Math.ceil(titleBar.width + cards.scrollWidth + border);
+  const height = Math.ceil(contentH + border);
+  api.setLayoutSize({ width, height, minWidth: 320, minHeight: 120, mode: 'horizontal' });
+}
+
+function applyLayoutMode(mode, { fit = true } = {}) {
+  const app = $('#app');
+  const horizontal = mode === 'horizontal';
+  if (horizontal) {
+    // 先按当前竖排尺寸量卡片宽度，保证切过去后卡片框大小不变
+    const card = $('.card');
+    const border =
+      (parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--app-border-width')) || 8) * 2;
+    const w = card
+      ? card.getBoundingClientRect().width
+      : Math.max(260, Math.round(window.innerWidth - border * 2 - 16));
+    app.style.setProperty('--h-card-width', `${w}px`);
+  } else {
+    app.style.removeProperty('--h-card-width');
+  }
+  app.classList.toggle('layout-horizontal', horizontal);
+  $('.title-text').textContent = horizontal ? t('app.title').replace(/\s+/, '\n') : t('app.title');
+  const btn = $('#btn-layout');
+  btn.dataset.i18nTitle = horizontal ? 'title.layoutVertical' : 'title.layoutHorizontal';
+  btn.title = t(btn.dataset.i18nTitle);
+  if (!fit) return;
+  if (horizontal) {
+    scheduleFit();
+  } else {
+    cancelAnimationFrame(fitRaf);
+    const w = Math.max(260, Math.round(state.config.width || 420));
+    const h = Math.max(300, Math.round(state.config.height || 580));
+    api.setLayoutSize({ width: w, height: h, minWidth: 260, minHeight: 300, mode: 'vertical' });
+  }
 }
 
 // 设置面板改动：本地已合并 state.config，这里应用 + 防抖持久化（合并累积的 patch）
@@ -70,6 +128,7 @@ function renderCards() {
     cardEls.set(m.id, card);
     container.appendChild(card);
   }
+  scheduleFit();
 }
 
 function updateCard(id) {
@@ -78,6 +137,7 @@ function updateCard(id) {
   if (!m || !elm) return;
   if (m.kind === 'balance') updateBalanceCard(elm, m);
   else updateUsageCard(elm, m);
+  scheduleFit();
 }
 
 async function reloadMonitors() {
@@ -105,11 +165,20 @@ function applyStaticTexts() {
   for (const node of document.querySelectorAll('[data-i18n-title]')) {
     node.title = t(node.dataset.i18nTitle);
   }
+  if ($('#app').classList.contains('layout-horizontal')) {
+    $('.title-text').textContent = t('app.title').replace(/\s+/, '\n');
+  }
 }
 
 // ---- 标题栏 ----
 
 function wireTitleBar() {
+  $('#btn-layout').addEventListener('click', () => {
+    const next = $('#app').classList.contains('layout-horizontal') ? 'vertical' : 'horizontal';
+    state.config.layoutMode = next;
+    applyLayoutMode(next);
+  });
+
   $('#btn-pin').addEventListener('click', async () => {
     const on = await api.toggleAlwaysOnTop();
     setPinState(!!on);
@@ -141,6 +210,7 @@ async function init() {
       state.config = snapshot.config;
       setLocale(snapshot.config.locale || 'zh');
       applyConfig(snapshot.config);
+      applyLayoutMode(snapshot.config.layoutMode === 'horizontal' ? 'horizontal' : 'vertical', { fit: false });
       applyStaticTexts();
     }
   });
@@ -151,6 +221,7 @@ async function init() {
   });
 
   applyConfig(state.config);
+  applyLayoutMode(state.config.layoutMode === 'horizontal' ? 'horizontal' : 'vertical', { fit: false });
   applyStaticTexts();
   await reloadMonitors();
 }
