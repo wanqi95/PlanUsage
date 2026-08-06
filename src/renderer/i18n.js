@@ -12,6 +12,8 @@ const zh = {
   'title.close': '隐藏',
   'empty.text': '暂无监控项',
   'empty.hint': '点击右上角 ⚙ 添加',
+  'empty.allDisabled': '全部监控项已停用',
+  'empty.allDisabledHint': '在设置里勾选即可重新显示',
 
   'period.fiveHours': '五小时',
   'period.week': '本周',
@@ -102,6 +104,8 @@ const zh = {
   'provider.custom-balance': '自定义余额',
 
   'toast.saved': '已保存',
+  'toast.enabled': '已启用',
+  'toast.disabled': '已停用',
   'toast.deleted': '已删除',
   'toast.refreshFailed': '刷新失败',
   'toast.loginSuccess': '登录成功',
@@ -120,6 +124,8 @@ const en = {
   'title.close': 'Hide',
   'empty.text': 'No monitors yet',
   'empty.hint': 'Click ⚙ in the title bar to add one',
+  'empty.allDisabled': 'All monitors are disabled',
+  'empty.allDisabledHint': 'Re-enable in settings to show again',
 
   'period.fiveHours': '5H',
   'period.week': 'Week',
@@ -210,6 +216,8 @@ const en = {
   'provider.custom-balance': 'Custom balance',
 
   'toast.saved': 'Saved',
+  'toast.enabled': 'Enabled',
+  'toast.disabled': 'Disabled',
   'toast.deleted': 'Deleted',
   'toast.refreshFailed': 'Refresh failed',
   'toast.loginSuccess': 'Login success',

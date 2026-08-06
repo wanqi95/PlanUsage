@@ -696,6 +696,26 @@ input[type='color'] {
   border-bottom: 1px solid var(--border);
 }
 
+.monitor-check {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  padding: 2px;
+  cursor: pointer;
+}
+
+.monitor-check input[type='checkbox'] {
+  width: 14px;
+  height: 14px;
+  margin: 0;
+  accent-color: var(--font-color);
+  cursor: pointer;
+}
+
+.monitor-row.disabled {
+  opacity: 0.45;
+}
+
 .monitor-drag {
   display: flex;
   flex-direction: column;

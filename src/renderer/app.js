@@ -113,17 +113,20 @@ function renderCards() {
   const container = $('#cards');
   container.innerHTML = '';
   cardEls.clear();
-  if (!state.monitors.length) {
+  // 主界面只显示启用的监控项；停用的仍在设置里可见，可重新勾选
+  const visible = state.monitors.filter((m) => m.enabled !== false);
+  if (!visible.length) {
+    const hasMonitors = state.monitors.length > 0;
     container.appendChild(
       el('div', { class: 'empty-state' }, [
         el('span', { class: 'empty-icon' }, '◔'),
-        el('span', { class: 'empty-text' }, t('empty.text')),
-        el('span', { class: 'empty-hint' }, t('empty.hint')),
+        el('span', { class: 'empty-text' }, hasMonitors ? t('empty.allDisabled') : t('empty.text')),
+        el('span', { class: 'empty-hint' }, hasMonitors ? t('empty.allDisabledHint') : t('empty.hint')),
       ])
     );
     return;
   }
-  for (const m of state.monitors) {
+  for (const m of visible) {
     const card = m.kind === 'balance' ? createBalanceCard(m) : createUsageCard(m);
     cardEls.set(m.id, card);
     container.appendChild(card);

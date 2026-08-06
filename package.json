@@ -1,6 +1,6 @@
 {
   "name": "plan-usage",
-  "version": "0.7.0",
+  "version": "0.7.1",
   "description": "大模型订阅用量/余额桌面悬浮监控 - 透明毛玻璃悬浮窗，多厂商多账号，用量圆盘+余额卡片",
   "main": "main.js",
   "author": "plan-usage",

@@ -329,7 +329,7 @@ function clearDragState(section) {
 }
 
 function buildMonitorRow(m) {
-  const row = el('div', { class: 'monitor-row', dataset: { id: m.id } }, [
+  const row = el('div', { class: 'monitor-row' + (m.enabled === false ? ' disabled' : ''), dataset: { id: m.id } }, [
     // 三横线手柄：按住上下拖动即可调整监控项顺序，主页按同一顺序展示
     el(
       'button',
@@ -359,6 +359,19 @@ function buildMonitorRow(m) {
     el('div', { class: 'monitor-info' }, [
       el('span', { class: 'monitor-name' }, m.name || m.provider),
       el('span', { class: 'monitor-sub' }, `${t(`provider.${m.provider}`)} · ${m.kind === 'balance' ? t('monitor.kindBalance') : t('monitor.kindUsage')} · ${refreshSummary(m)}`),
+    ]),
+    // 打勾 = 启用该监控项（主页显示/隐藏、是否定时刷新都受 enabled 控制）
+    el('label', { class: 'monitor-check', title: t('monitor.enabled') }, [
+      el('input', {
+        type: 'checkbox',
+        checked: m.enabled !== false,
+        onchange: async (e) => {
+          await window.api.updateMonitor(m.id, { enabled: e.target.checked });
+          showToast(e.target.checked ? t('toast.enabled') : t('toast.disabled'));
+          await hooks.onMonitorsChanged();
+          renderSettings();
+        },
+      }),
     ]),
     el('button', { class: 'form-btn', onclick: () => { editingId = m.id; draft = draftFromMonitor(m); renderSettings(); } }, t('monitor.edit')),
     el('button', {
